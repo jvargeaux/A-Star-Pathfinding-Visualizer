@@ -1,0 +1,51 @@
+
+VARIABLES
+
+grid [[]] of nodes
+start node
+end node
+currentPath [] of nodes
+
+for each node:
+x
+y
+g cost
+h cost
+f cost
+visited
+
+vertical and horizontal distance: 10
+diagonal distance: 14
+
+
+g cost // distance from starting node
+h cost // distance from ending node
+f cost // g + h costs
+
+
+
+/////////////////
+
+
+OPEN
+CLOSED
+
+add start node to OPEN
+
+loop
+  current node = node in OPEN with lowest f_cost // only start node at beg
+  remove current node from OPEN
+  add current node to CLOSED
+
+  if current node is target node
+    return
+
+  for each neighbor of current node
+    if neighbor is not traversable or neighbor is in CLOSED
+      skip
+
+    if new path to neighbor is shorter OR neighbor is not in OPEN
+      set f_cost of neighbor
+      set parent of neighbor to current
+      if neighbor is not in OPEN
+        add neighbor to OPEN
