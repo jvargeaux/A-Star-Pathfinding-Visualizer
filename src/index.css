@@ -7,10 +7,39 @@ html, body {
 }
 
 button {
-  height: 2rem;
-  width: 4rem;
-  margin-top: 100px;
-  align-self: center;
+  outline: none;
+  height: 3rem;
+  width: 6rem;
+  font-size: 0.75rem;
+  box-sizing: border-box;
+  background-color: #5a5d63;
+  color: #fff;
+}
+
+button:hover {
+  cursor: pointer;
+  border: 1px solid #45ddb4;
+  color: #45ddb4;
+  background-color: #454950;
+}
+
+.mainButtons {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.mainButtons button {
+  background-color: #e3e3e3;
+  color: #545454;
+  margin: 20px 10px;
+  width: 8rem;
+  font-size: 1rem;
+}
+
+.mainButtons button:hover {
+  color: #45ddb4;
+  background-color: #666;
 }
 
 .App {
@@ -18,23 +47,30 @@ button {
   flex-direction: column;
 }
 
+.Controls {
+  display: flex;
+  margin-top: 80px;
+  justify-content: center;
+}
+
 .Grid {
   display: flex;
   flex-direction: column;
-  margin-top: 100px;
-  /* background-color: #868686; */
+  margin-top: 20px;
+  background-color: #f0f0f0;
 }
 
 .Row {
   display: flex;
   flex-direction: row;
   justify-content: center;
+  /* background-color: #f0f0f0; */
 }
 
 .Node {
   color: #747474;
-  height: 20px;
-  width: 20px;
+  height: 24px;
+  width: 24px;
   padding: 0;
   background-color: #f0f0f0;
   border-right: 1px solid rgba(0, 0, 0, 0.1);
@@ -48,16 +84,16 @@ button {
 }
 
 .Node:hover {
-  color: #fff;
-  opacity: 0.9;
-}
-
-.Controls button {
-  outline: none;
+  color: #000;
+  opacity: 1;
 }
 
 .activated {
-  background-color: #35a156;
+  background-color: #2eac7e;
+}
+.activated:hover {
+  color: #45ddb4;
+  background-color: #21835f;
 }
 
 /* Node Colors */
@@ -71,26 +107,79 @@ button {
   background-color: #c91313 !important;
 }
 .visited {
-  background-color: #c0d0e3;
+  animation: visitedFade 0.8s forwards;
 }
 .currentPath {
-  background-color: #78bff2;
+  animation: currentPathFade 0.8s forwards;
 }
 .finalPath {
-  background-color: #8b76f5;
+  /* animation: finalPathLoop 2s infinite alternate; */
+  animation: finalPathFade 1s forwards;
 }
 .untraversable {
   background-color: #454545;
-  /* animation: wallFade 0.5s forwards; */
+  /* transition: 0.5s; */
+  /* animation: wallFade 0.8s forwards; */
 }
 
 /* @keyframes wallFade {
   from {
     background-color: #f0f0f0;
-    transform: scale(0.1);
+    transform: scale(0.5);
+    border-radius: 8px;
   }
   to {
     background-color: #454545;
     transform: scale(1);
+    border-radius: 0px;
   }
 } */
+
+@keyframes visitedFade {
+  from {
+    background-color: #f0f0f0;
+    transform: scale(0.5);
+    border-radius: 8px;
+  }
+  to {
+    background-color: #b9d8fe;
+    transform: scale(1);
+    border-radius: 0px;
+  }
+}
+
+@keyframes currentPathFade {
+  from {
+    background-color: #72dab2;
+    transform: scale(0.5);
+    border-radius: 8px;
+  }
+  to {
+    background-color: #79b1fc;
+    transform: scale(1);
+    border-radius: 0px;
+  }
+}
+
+@keyframes finalPathFade {
+  0% {
+    background-color: #58b1f1;
+  }
+  25% {
+    background-color: #f95ca2;
+  }
+  100% {
+    background-color: #ffe871;
+  }
+}
+@keyframes finalPathLoop {
+  0% {
+    background-color: #7982fc;
+  }
+  50% {
+    background-color: #7982fc;
+  }
+  100% {
+    background-color: #ffe871;
+  }
+}

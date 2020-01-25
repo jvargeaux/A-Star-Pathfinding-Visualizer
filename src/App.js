@@ -309,8 +309,10 @@ function App() {
   return (
     <div className="App">
       <Controls clicked={controlClicked} mode={mode} />
-      <button onClick={A_star}>Hey</button>
-      <button onClick={resetGrid}>Reset</button>
+      <div className="mainButtons">
+        <button onClick={A_star}>Visualize</button>
+        <button onClick={resetGrid}>Reset</button>
+      </div>
       <Grid rows={rows} start={startNode} end={endNode} mouse={mouse} />
     </div>
   );
