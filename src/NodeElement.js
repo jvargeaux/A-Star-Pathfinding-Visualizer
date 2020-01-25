@@ -32,8 +32,8 @@ function Node(props) {
   const nodePos = [props.node.posX, props.node.posY];
 
   var colorClasses = "";
-  if (props.node.visited && !posAreSame(props.start, nodePos) && !posAreSame(props.end, nodePos)) {
-    colorClasses += "visited ";
+  if (props.node.discovered && !posAreSame(props.start, nodePos) && !posAreSame(props.end, nodePos)) {
+    colorClasses += "discovered ";
   }
   if (props.node.currentPath) {
     colorClasses += "currentPath ";

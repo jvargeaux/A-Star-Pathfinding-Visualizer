@@ -14,8 +14,8 @@ function Controls(props) {
   return (
     <div className="Controls">
       <button className={props.mode === 'wall' ? "activated" : ""} onClick={clickWall}>Place Walls</button>
-      <button className={props.mode === 'start' ? "activated" : ""} onClick={clickStart}>Place Start Node</button>
-      <button className={props.mode === 'end' ? "activated" : ""} onClick={clickEnd}>Place End Node</button>
+      <button className={props.mode === 'start' ? "activated" : ""} onClick={clickStart}>Place Start</button>
+      <button className={props.mode === 'end' ? "activated" : ""} onClick={clickEnd}>Place End</button>
     </div>
   );
 }

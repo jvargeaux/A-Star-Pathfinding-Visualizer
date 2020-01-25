@@ -5,9 +5,9 @@ import Controls from './Controls.js';
 // Macros
 const sizeX = 50;
 const sizeY = 50;
-const start = [18, 24];
+const start = [12, 18];
 const end = [35, 26];
-const speed = 2;
+const speed = 5;
 
 
 // Init Grid
@@ -22,14 +22,14 @@ for (let y = 0; y < sizeY; y++) {
     initRows[y][x] = {
       posX: x,
       posY: y,
-      visited: false,
+      discovered: false,
       currentPath: false,
       finalPath: false,
       traversable: true,
       parent: [],
-      gCost: 0,
+      gCost: Infinity,
       hCost: 0,
-      fCost: 0
+      fCost: Infinity
     };
   }
 }
@@ -41,6 +41,7 @@ function App() {
   const [mode, setMode] = useState('wall');
   const [startNode, setStartNode] = useState(start);
   const [endNode, setEndNode] = useState(end);
+  const [nodeInfo, setNodeInfo] = useState([]);
 
   // [mouseIsDragging, createWalls(aka pathIsTraversable)]
   const [dragging, setDragging] = useState([false, true]);
@@ -50,11 +51,11 @@ function App() {
 
     for (let i = 0; i < grid.length; i++) {
       for (let j = 0; j < grid[i].length; j++) {
-        grid[i][j].visited = false;
+        grid[i][j].discovered = false;
         grid[i][j].open = false;
         grid[i][j].hCost = 0;
-        grid[i][j].gCost = 0;
-        grid[i][j].fCost = 0;
+        grid[i][j].gCost = Infinity;
+        grid[i][j].fCost = Infinity;
         grid[i][j].currentPath = false;
         grid[i][j].finalPath = false;
         grid[i][j].parent = [];
@@ -110,6 +111,9 @@ function App() {
 
   function mouse(eventType, x, y) {
     const newGrid = rows;
+    if (eventType === 'enter') {
+      setNodeInfo(newGrid[y][x]);
+    }
     if (mode === 'wall') {
       if (posAreSame(startNode, [x, y]) || posAreSame(endNode, [x, y])) {
         // do nothing
@@ -155,19 +159,14 @@ function App() {
   }
 
   function posAreSame(pos1, pos2) {
-    if (pos1 && pos2) {
-      let areSame = true;
-      if (pos1[0] !== pos2[0]) { // X
-        areSame = false;
-      }
-      if (pos1[1] !== pos2[1]) { // Y
-        areSame = false;
-      }
-      return areSame;
+    // console.log(`comparing pos1 ${pos1[0]},${pos1[1]} to pos2 ${pos2[0]},${pos2[1]}.`);
+    if (pos1[0] !== pos2[0]) { // X
+      return false;
     }
-    else {
-      return 0;
+    if (pos1[1] !== pos2[1]) { // Y
+      return false;
     }
+    return true;
   }
 
   function A_star() {
@@ -178,8 +177,13 @@ function App() {
     const originNode = grid[startNode[1]][startNode[0]];
     const targetNode = grid[endNode[1]][endNode[0]];
 
-    // Algorithm
-    var OPEN = [];
+    originNode.hCost = distance(originNode, targetNode);
+    originNode.gCost = 0;
+    originNode.fCost = 0;
+    originNode.discovered = true;
+    originNode.parent = null;
+
+    var OPEN = []; // discovered nodes
     var CLOSED = [];
     OPEN.push(originNode);
 
@@ -188,58 +192,83 @@ function App() {
 
         // ALGORITHM LOOP
 
-        // if (counter >= 30) {
-        //   return;
-        // }
+        if (!OPEN) {
+          console.log("Failed.");
+          return;
+        }
 
+        // console.log("Open: ");
+        // console.log(OPEN);
+
+        // Lowest fCost node in OPEN
         var cIndex = getIndexOfLowestFCost(OPEN);
         var currentNode = OPEN[cIndex];
+
         if (!currentNode) {
           return;
         }
-        OPEN.splice(cIndex, 1);
-        currentNode.hCost = distance(currentNode, targetNode);
-        currentNode.gCost = distance(currentNode, originNode);
+
         currentNode.currentPath = true;
 
+        // remove current node from OPEN and add to CLOSED
+        OPEN.splice(cIndex, 1);
         CLOSED.push(currentNode);
 
+        // we reached our goal!
         if (currentNode === targetNode) {
+          // start back tracking the final path
           const backTrackingPath = [];
           var backTrackingNode = currentNode.parent;
-          if (backTrackingNode) {
-            while (!posAreSame(backTrackingNode, originNode)) {
+          while (backTrackingNode) {
+            if (!posAreSame(backTrackingNode, startNode)) {
               backTrackingPath.push([backTrackingNode[1], backTrackingNode[0]]);
               grid[backTrackingNode[1]][backTrackingNode[0]].finalPath = true;
               backTrackingNode = grid[backTrackingNode[1]][backTrackingNode[0]].parent;
             }
+            else {
+              backTrackingNode = null;
+            }
           }
-          console.log(backTrackingPath);
+          // console.log(backTrackingPath);
 
           updateState(grid);
           return;
         }
 
+
+        // NEIGHBORS
+
         let neighborNodes = getNeighbors(currentNode, rows);
+
         neighborNodes.forEach(neighborNode => {
+
           let isInClosed = CLOSED.find(nodeInClosed => nodeInClosed === neighborNode);
+
+          // if neighbor node is a wall or has already been visited (AKA it has been "currentNode"), skip it
           if (neighborNode.traversable && !isInClosed) {
-            neighborNode.visited = true;
-            neighborNode.parent = [currentNode.posX, currentNode.posY];
-            neighborNode.gCost = currentNode.gCost + distance(neighborNode, currentNode);
-            let isInOpen = OPEN.find(nodeInOpen => nodeInOpen === neighborNode);
-            if (distance(neighborNode, originNode) < currentNode.gCost || !isInOpen) { // better path
-              neighborNode.hCost = distance(neighborNode, targetNode);
+
+            neighborNode.discovered = true;
+            neighborNode.hCost = distance(neighborNode, targetNode);
+            neighborNode.fCost = neighborNode.hCost + neighborNode.gCost;
+
+            // check the path to the neighbor node
+            let tentative_gCost = currentNode.gCost + distance(neighborNode, currentNode);
+
+            // if the recalculated gCost is better than the old one
+            // true for first time discovered nodes because default gCost is Infinity
+            if (tentative_gCost < neighborNode.gCost) {
+              neighborNode.gCost = tentative_gCost;
               neighborNode.fCost = neighborNode.hCost + neighborNode.gCost;
-              OPEN.push(neighborNode);
+              neighborNode.parent = [currentNode.posX, currentNode.posY];
+
+              let isInOpen = OPEN.find(nodeInOpen => nodeInOpen === neighborNode);
+              if (!isInOpen) {
+                OPEN.push(neighborNode);
+              }
             }
+
           }
         });
-
-        if (!OPEN) {
-          console.log("Failed.");
-          return;
-        }
 
         updateState(grid);
         counter++;
@@ -308,10 +337,17 @@ function App() {
 
   return (
     <div className="App">
+      <h1>A* Pathfinding Algorithm Visualizer</h1>
       <Controls clicked={controlClicked} mode={mode} />
       <div className="mainButtons">
         <button onClick={A_star}>Visualize</button>
         <button onClick={resetGrid}>Reset</button>
+      </div>
+      <div className="nodeInfo">
+        <p>X: {nodeInfo.posX}, Y: {nodeInfo.posY}</p>
+        <p>G Cost: {nodeInfo.gCost}</p>
+        <p>H Cost: {nodeInfo.hCost}</p>
+        <p>F Cost: {nodeInfo.fCost}</p>
       </div>
       <Grid rows={rows} start={startNode} end={endNode} mouse={mouse} />
     </div>
